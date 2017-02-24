@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+        <meta charset="utf-8" />
+        <title>Periodic table</title>
+        <script src="assets/alive2.js"></script>
+        <script src="assets/elements.js"></script>
+        <script src="assets/periodic.js"></script>
+        <link href="assets/latofonts.css" rel="stylesheet" type="text/css">
+        <style>
+            body, html {margin:0; width: 100%; height: 100%; font-family: 'LatoWeb', sans-serif; min-height: 400px; min-width: 600px; overflow-y: hidden;}
+            svg {width:100%; height: 100%}
+            #p_switch{
+            	position: absolute;
+            	top: 10px;
+            	right: 10px;
+            	font-size: 12px;
+            	background: rgba(93,168,192,.1);
+            }
+            #p_scheme{
+            	position: absolute;
+            	top: 10px;
+            	left: 10px;
+            	font-size: 12px;
+            	background: rgba(93,168,192,.1);
+            }
+            .a_switch, .a_scheme {
+            	display: inline-block;
+            	text-decoration: none;
+            	padding: 4px 8px;
+            	border-radius: 2px;
+            	color: rgb(93,168,192);
+            }
+            .a_selected{
+            	background: black;
+            	color: white;
+            }
+        </style>
+</head>
+
+<body>
+<svg>
+</svg>
+<div id="p_switch">
+	<a id="a_full" class="a_switch a_selected" href="javascript:p_switch('full')">Полная</a>
+	<a id="a_minimal" class="a_switch" href="javascript:p_switch('minimal')">Книжная</a>
+	<a id="a_list" class="a_switch" href="javascript:p_switch('list')">Списком</a>
+</div>
+<div id="p_scheme">
+	<a id="a_groups" class="a_scheme a_selected" href="javascript:p_scheme('groups')">Группы</a>
+	<a id="a_weight" class="a_scheme" href="javascript:p_scheme('weight')">Масса</a>
+	<a id="a_radioactivity" class="a_scheme" href="javascript:p_scheme('radioactivity',true)">Полураспад</a>
+	<a id="a_abu" class="a_scheme" href="javascript:p_scheme('abu')">Количество</a>
+	<a id="a_melting" class="a_scheme" href="javascript:p_scheme('melting')">Плавление</a>
+	<a id="a_boiling" class="a_scheme" href="javascript:p_scheme('boiling')">Кипение</a>
+	<a id="a_elneg" class="a_scheme" href="javascript:p_scheme('elneg')">Электроотрицательность</a>
+
+</div>
+<script type="text/javascript">
+
+var periodic;
+
+function p_switch(mode){
+	let nodes = document.getElementsByClassName('a_switch');
+	for (let i = 0; i < nodes.length; i++){
+		if (nodes[i].id == 'a_' + mode){
+			nodes[i].classList.add('a_selected');
+		} else {
+			nodes[i].classList.remove('a_selected');
+		}
+	}
+	periodic.update(mode);
+}
+function p_scheme(scheme,isDark){
+	let nodes = document.getElementsByClassName('a_scheme');
+	for (let i = 0; i < nodes.length; i++){
+		if (nodes[i].id == 'a_' + scheme){
+			nodes[i].classList.add('a_selected');
+		} else {
+			nodes[i].classList.remove('a_selected');
+		}
+	}
+	if (isDark){
+		periodic.repaint(scheme,isDark);
+	} else {
+		periodic.repaint(scheme);
+	}
+}
+function getReasonableTime(s){
+	let result;
+	if (s == 0){
+		result = '∞';
+	} else if (s < .001) {
+		result = s * 1000000 + ' мкс';
+	} else if (s < 1){
+		result = s * 1000 + ' мс';
+	} else if (s < 60){
+		result = s + ' с';
+	} else if (s < 3600){
+		result = Math.round(s / 60) + ' м';
+	} else if (s < 86400){
+		result = Math.round(s / 3600) + ' ч'
+	} else if (s < 31536000){
+		result = Math.round(s / 86400) + ' д'
+	} else if (s < 31536000000) {
+		let forma = (Math.round(s / 31536000) + '');
+		if (forma[forma.length - 1] === '1' || forma[forma.length - 1] === '2' || forma[forma.length - 1] === '3' || forma[forma.length - 1] === '4'){
+			forma = ' г'
+		} else {
+			forma = ' лет'
+		}
+		result = Math.round(s / 31536000) + forma;
+	} else if (s < 31536000000000){
+		result = Math.round(s / 31536000000) + ' тыс л'
+	} else if (s < 31536000000000000){
+		result = Math.round(s / 31536000000000) + ' млн л'
+	} else if (s < 31536000000000000000) {
+		result = Math.round(s / 31536000000000000) + ' млрд л'
+	} else {
+		result = Math.round(s / 31536000000000000000000000) + ' квин л';
+	}
+	return result;
+}
+
+window.onload = function(){
+	console.log('Everything is ready');
+	periodic = new Periodic(document.getElementsByTagName('svg')[0]);
+	window.addEventListener('keypress', function(e){
+		//console.log(e.keyCode);
+		if (e.keyCode === 57){
+			p_switch('minimal');
+		} else if (e.keyCode == 48){
+			p_switch('full');
+		} else if(e.keyCode == 56){
+			p_switch('list');
+		} else if (e.keyCode == 50){
+			p_scheme('weight');
+		} else if (e.keyCode == 49){
+			p_scheme('groups');
+		} else if (e.keyCode == 51){
+			p_scheme('radioactivity',true);
+		} else if (e.keyCode == 52){
+			p_scheme('abu');
+		} else if (e.keyCode == 53){
+			p_scheme('melting');
+		} else if (e.keyCode == 54){
+			p_scheme('boiling');
+		} else if (e.keyCode == 55){
+			p_scheme('elneg');
+		}
+	})
+}
+	
+</script>
+</body>
+</html>
