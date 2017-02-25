@@ -16,6 +16,7 @@
             	right: 10px;
             	font-size: 12px;
             	background: rgba(93,168,192,.1);
+            	max-width: 30%
             }
             #p_scheme{
             	position: absolute;
@@ -23,6 +24,7 @@
             	left: 10px;
             	font-size: 12px;
             	background: rgba(93,168,192,.1);
+            	max-width: 65%
             }
             .a_switch, .a_scheme {
             	display: inline-block;
@@ -37,7 +39,35 @@
             }
         </style>
 </head>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter24216865 = new Ya.Metrika({
+                    id:24216865,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true,
+                    webvisor:true
+                });
+            } catch(e) { }
+        });
 
+        var n = d.getElementsByTagName("script")[0],
+            s = d.createElement("script"),
+            f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/24216865" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
 <body>
 <svg>
 </svg>
@@ -50,7 +80,8 @@
 	<a id="a_groups" class="a_scheme a_selected" href="javascript:p_scheme('groups')">Группы</a>
 	<a id="a_weight" class="a_scheme" href="javascript:p_scheme('weight')">Масса</a>
 	<a id="a_radioactivity" class="a_scheme" href="javascript:p_scheme('radioactivity',true)">Полураспад</a>
-	<a id="a_abu" class="a_scheme" href="javascript:p_scheme('abu')">Количество</a>
+	<a id="a_abu" class="a_scheme" href="javascript:p_scheme('abu')">Около Солнца</a>
+	<a id="a_cAbu" class="a_scheme" href="javascript:p_scheme('cAbu')">На Земле</a>
 	<a id="a_melting" class="a_scheme" href="javascript:p_scheme('melting')">Плавление</a>
 	<a id="a_boiling" class="a_scheme" href="javascript:p_scheme('boiling')">Кипение</a>
 	<a id="a_elneg" class="a_scheme" href="javascript:p_scheme('elneg')">Электроотрицательность</a>
@@ -148,7 +179,15 @@ window.onload = function(){
 		} else if (e.keyCode == 55){
 			p_scheme('elneg');
 		}
-	})
+	});
+	let resizeTimer;
+	function redraw(){
+		periodic.update();
+	}
+	window.addEventListener('resize', function(e){
+		clearTimeout(resizeTimer);
+		resizeTimer = setTimeout(redraw, 300);
+	});
 }
 	
 </script>

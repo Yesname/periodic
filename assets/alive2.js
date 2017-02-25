@@ -232,36 +232,37 @@ alive_Animation.prototype.frame = function(){
 	this.currentTime += alive.dt;
 	if (this.currentTime >= this.startTime){
 		if (this.currentTime < this.endTime){
-			if (typeof this.startValue === 'object' && this.combinator){
-				for (let i = 0; i < this.startValue.length; i++){
-					this.currentValue[i] = map(this.currentTime, [this.startTime, this.endTime], [this.startValue[i], this.endValue[i]], this.interpolation);
-					if (this.property.isRounded) this.currentValue[i] = Math.round(this.currentValue[i]);
-				}
-				if (this.isAttr){
-					this.element.setAttribute(this.property.css, this.combinator(this.currentValue));
-				} else {
-					this.element.style[this.property.css] = this.combinator(this.currentValue);
-				}
-			} else {
-				if (this.combinator){
-					this.currentValue = map(this.currentTime, [this.startTime, this.endTime], [this.startValue, this.endValue], this.interpolation);
-					if (this.property.isRounded) this.currentValue = Math.round(this.currentValue);
+			if (this.interpolation != 'jump'){
+				if (typeof this.startValue === 'object' && this.combinator){
+					for (let i = 0; i < this.startValue.length; i++){
+						this.currentValue[i] = map(this.currentTime, [this.startTime, this.endTime], [this.startValue[i], this.endValue[i]], this.interpolation);
+						if (this.property.isRounded) this.currentValue[i] = Math.round(this.currentValue[i]);
+					}
 					if (this.isAttr){
 						this.element.setAttribute(this.property.css, this.combinator(this.currentValue));
 					} else {
 						this.element.style[this.property.css] = this.combinator(this.currentValue);
 					}
 				} else {
-					let mapped = map(this.currentTime, [this.startTime, this.endTime], [this.startValue, this.endValue], this.interpolation);
-					if (this.property.isRounded) mapped = Math.round(mapped);
-					if (this.isAttr){
-						this.element.setAttribute(this.property.css, mapped);
+					if (this.combinator){
+						this.currentValue = map(this.currentTime, [this.startTime, this.endTime], [this.startValue, this.endValue], this.interpolation);
+						if (this.property.isRounded) this.currentValue = Math.round(this.currentValue);
+						if (this.isAttr){
+							this.element.setAttribute(this.property.css, this.combinator(this.currentValue));
+						} else {
+							this.element.style[this.property.css] = this.combinator(this.currentValue);
+						}
 					} else {
-						this.element.style[this.property.css] = mapped;
+						let mapped = map(this.currentTime, [this.startTime, this.endTime], [this.startValue, this.endValue], this.interpolation);
+						if (this.property.isRounded) mapped = Math.round(mapped);
+						if (this.isAttr){
+							this.element.setAttribute(this.property.css, mapped);
+						} else {
+							this.element.style[this.property.css] = mapped;
+						}
 					}
-				}
-			}	
-			
+				}	
+			}
 		} else {
 			if (this.combinator){
 				if (this.isAttr){
@@ -296,7 +297,7 @@ function map(value,domain,range,interpolation){
    		return range[0] + (range[1] - range[0]) * invert(elastic)((value - domain[0]) / (domain[1] - domain[0]));
     } else if (interpolation === 'soft'){
     	return range[0] + (range[1] - range[0]) * interCubeFull((value - domain[0]) / (domain[1] - domain[0]));
-    } else {
+    } else { //Linear
         return range[0] + (range[1] - range[0]) * (value - domain[0]) / (domain[1] - domain[0]);
     }
 };
@@ -312,6 +313,9 @@ function mapColor(frac,colors,interpolation){
         		fraction = fraction > 1 ? 1 : fraction < 0 ? 0 : fraction;
         	} else if (interpolation === 'logU' && fraction != 1){
         		fraction = Math.abs(Math.log(fraction) / 27);
+        		fraction = fraction > 1 ? 1 : fraction < 0 ? 0 : fraction;
+        	} else if (interpolation === 'logC' && fraction != 1){
+        		fraction = Math.abs(Math.log(fraction) / 20);
         		fraction = fraction > 1 ? 1 : fraction < 0 ? 0 : fraction;
         	}
         	for (let i = 0; i <= 1; i += 1 / (colors.length - 1)){
