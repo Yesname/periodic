@@ -14,7 +14,8 @@ function Alive(){
 		{name: 'svgWidth', type: 'int', css: 'width', isAttr: true},
 		{name: 'svgHeight', type: 'int', css: 'height', isAttr: true},
 		{name: 'x', type: 'int', css: 'x', isAttr: true},
-		{name: 'y', type: 'int', css: 'y', isAttr: true}
+		{name: 'y', type: 'int', css: 'y', isAttr: true},
+		{name: 'filterBB', type: 'bb', css: 'filter'}
 	];
 };
 Alive.prototype.select = function(element){
@@ -133,6 +134,23 @@ Alive.prototype.animate = function(element,property,value,duration,delay,callbac
 				}
 				startValue = [+parsedStart[0], +parsedStart[1], +parsedStart[2]];
 				endValue = [+parsedEnd[0], +parsedEnd[1], +parsedEnd[2]];
+			} else if (validProperty.type === 'bb'){
+				let parsedStart = currentPropertyValue.match(/-?[0-9]+([.][0-9]+)?/g);
+				let parsedEnd = value.match(/-?[0-9]+([.][0-9]+)?/g);
+				if (!parsedStart) {								
+					parsedStart = ['0','100'];
+				}
+				if (!parsedStart[2]){
+					parsedStart[2] = '100';
+				}
+				if (parsedEnd.length != 2){
+					console.log('Here comes nothing. Use blur() brightness() simultaneously.')
+				}
+				combinator = function(two){									
+					return 'blur('+two[0]+'px) brightness('+two[1]+'%)';
+				}
+				startValue = [+parsedStart[0], +parsedStart[1]];
+				endValue = [+parsedEnd[0], +parsedEnd[1]];
 			};
 
 			if (startValue != undefined && endValue != undefined){

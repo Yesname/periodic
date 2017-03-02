@@ -3,13 +3,14 @@
 <head>
         <meta charset="utf-8" />
         <title>Periodic table</title>
-        <script src="assets/alive2.js"></script>
+        <script src="assets/alive.js"></script>
         <script src="assets/elements.js"></script>
+        <script src="assets/story.js"></script>
         <script src="assets/periodic.js"></script>
         <link href="assets/latofonts.css" rel="stylesheet" type="text/css">
         <style>
             body, html {margin:0; width: 100%; height: 100%; font-family: 'LatoWeb', sans-serif; min-height: 400px; min-width: 600px; overflow-y: hidden;}
-            svg {width:100%; height: 100%}
+            svg {width:100%; height: 100%;}
             #p_switch{
             	position: absolute;
             	top: 10px;
@@ -37,9 +38,23 @@
             	background: black;
             	color: white;
             }
+            .story {
+            	position: absolute;
+            	top: 30%;
+            	left: 0;
+            	width: 100%;
+            	height: 100%;
+            	display: none;
+            }
+            .story p {
+            	font-size: 1.6em;
+            	line-height: 1.6em;
+            	margin: 0 30% 3em 5em;
+            }
         </style>
 </head>
-<!-- Yandex.Metrika counter -->
+
+<!-- Yandex.Metrika counter 
 <script type="text/javascript">
     (function (d, w, c) {
         (w[c] = w[c] || []).push(function() {
@@ -67,7 +82,8 @@
     })(document, window, "yandex_metrika_callbacks");
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/24216865" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<!-- /Yandex.Metrika counter -->
+ /Yandex.Metrika counter -->
+
 <body>
 <svg>
 </svg>
@@ -79,13 +95,12 @@
 <div id="p_scheme">
 	<a id="a_groups" class="a_scheme a_selected" href="javascript:p_scheme('groups')">Группы</a>
 	<a id="a_weight" class="a_scheme" href="javascript:p_scheme('weight')">Масса</a>
-	<a id="a_radioactivity" class="a_scheme" href="javascript:p_scheme('radioactivity',true)">Полураспад</a>
+	<a id="a_radioactivity" class="a_scheme" href="javascript:p_scheme('radioactivity',true)">Радиоактивность</a>
 	<a id="a_abu" class="a_scheme" href="javascript:p_scheme('abu')">Около Солнца</a>
 	<a id="a_cAbu" class="a_scheme" href="javascript:p_scheme('cAbu')">На Земле</a>
 	<a id="a_melting" class="a_scheme" href="javascript:p_scheme('melting')">Плавление</a>
 	<a id="a_boiling" class="a_scheme" href="javascript:p_scheme('boiling')">Кипение</a>
 	<a id="a_elneg" class="a_scheme" href="javascript:p_scheme('elneg')">Электроотрицательность</a>
-
 </div>
 <script type="text/javascript">
 
@@ -178,6 +193,8 @@ window.onload = function(){
 			p_scheme('boiling');
 		} else if (e.keyCode == 55){
 			p_scheme('elneg');
+		} else if (e.keyCode == 101){
+			periodic.showStory();
 		}
 	});
 	let resizeTimer;

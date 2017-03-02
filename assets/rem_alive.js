@@ -6,7 +6,7 @@ function Alive(){
 	this.tt = 0;
 	this.active = false;
 	this.mainMask = /(?:[^\d-.]|\.(?!\d)|-(?!\.?\d))+|-?(?:\d*\.)?\d+/g;
-	this.colorMask = /#([A-Fa-f0-9]{3}){1,2}|rgba?\(\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(\d+)?(\.\d+)?\s*)?\)/;
+	this.RGBMask = /#([A-Fa-f0-9]{3}){1,2}|rgba?\(\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(\d+)?(\.\d+)?\s*)?\)/;
 	this.properties = [
 		{name: 'margin-top', validName: 'marginTop'},
 		{name: 'font-size', validName: 'fontSize'},
@@ -31,7 +31,7 @@ Alive.prototype.ignition = function(){
 Alive.prototype.select = function(element){
 	if (typeof element == 'string'){
 		let dom_id = document.getElementById(element);
-		let dom_class = document.getElementsByClassName(element)[0];  // TO DO: MULTIPLE SELECTION
+		let dom_class = document.getElementsByClassName(element)[0]; // TO DO: MULTIPLE SELECTION
 		if (dom_id || dom_class){
 			return dom_id ? dom_id : dom_class;
 		} else {
@@ -74,7 +74,7 @@ Alive.prototype.animate = function(element,property,value,duration,delay,callbac
 	if (element && property && value != undefined){
 		let node = this.select(element);
 		let validProperty = this.getValidProperty(property);
-		let currentPropertyValue, startValue, endValue, combinator, validDuration = 1000, validDelay = 0, validCallback, validEasing, isColor;
+		let currentPropertyValue, startValue, endValue, combinator, validDuration = 1000, validDelay = 0, validCallback, validEasing;
 
 		if (node && validProperty){
 			if (validProperty.isAttr){
@@ -85,50 +85,48 @@ Alive.prototype.animate = function(element,property,value,duration,delay,callbac
 			let parsedStart = typeof currentPropertyValue === 'number' ? currentPropertyValue : (currentPropertyValue === undefined || currentPropertyValue === null) ? '0' : currentPropertyValue.match(this.mainMask);
 			let parsedEnd = typeof value === 'number' ? value : value.match(this.mainMask);
 			
-			isColor = this.colorMask.test(value);
-			if (isColor){
-				parsedStart = this.findNumbers(parsedStart);		//UPDATE TO ALIVE.ANIMATE(A, COLOR,'RED');
-				parsedEnd = this.findNumbers(parsedEnd);
-				if (parsedStart.ints[0] === 0 && parsedStart.ints[1] === 0 && parsedStart.ints[2] === 0 && parsedStart.ints[3] === 0){
-					parsedStart.ints[0] = parsedEnd.ints[0];
-					parsedStart.ints[1] = parsedEnd.ints[1];
-					parsedStart.ints[2] = parsedEnd.ints[2];
-					parsedStart.ints[3] = 0;
-				}
-				if (parsedStart.ints[3] == undefined) parsedStart.ints[3] = 1;
-				if (parsedEnd.ints[3] == undefined) parsedEnd.ints[3] = 1;
-				combinator = function(rgba){
-					return 'rgba('+Math.round(rgba[0])+','+Math.round(rgba[1])+','+Math.round(rgba[2])+','+rgba[3]+')';
-				};
+			if (typeof parsedEnd === 'number'){
+				parsedStart = {ints: +parsedStart || 0};
+				parsedEnd = {ints: +parsedEnd || 0};
+				combinator = false;
 			} else {
-				if (typeof parsedEnd === 'number'){
-					parsedStart = {ints: +parsedStart || 0};
-					parsedEnd = {ints: +parsedEnd || 0};
-					combinator = false;
-				} else {
-					parsedStart = this.findNumbers(parsedStart);
-					parsedEnd = this.findNumbers(parsedEnd);
-					if (parsedStart.ints.length != parsedEnd.ints.length){		//DEBATE
-						for (let i = 0; i < parsedEnd.ints.length; i++){
-							if (parsedStart.ints[i] === undefined){
-								parsedStart.ints[i] = 0;
-							}
-						}
+				parsedStart = this.findNumbers(parsedStart);
+				parsedEnd = this.findNumbers(parsedEnd);
+				let isRGB = this.RGBMask.test(value);
+				let source = isRGB ? parsedStart.source : parsedEnd.source;
+				if (isRGB){
+					if (parsedStart.ints[0] === 0 && parsedStart.ints[1] === 0 && parsedStart.ints[2] === 0 && parsedStart.ints[3] === 0){
+						parsedStart.ints[0] = parsedEnd.ints[0];
+						parsedStart.ints[1] = parsedEnd.ints[1];
+						parsedStart.ints[2] = parsedEnd.ints[2];
+						parsedStart.ints[3] = 0;
 					}
-					
-					let combinatorGuts = 'return ';
-					for (let i = 0, j = 0; i < parsedEnd.source.length; i++){
-						if (typeof parsedEnd.source[i] === 'string'){
-							combinatorGuts += '\''+parsedEnd.source[i]+'\'+';
-						} else {
-							combinatorGuts += 'chunks['+j+']+';
-							j++;
-						}
-					}
-					combinatorGuts = combinatorGuts.substring(0, combinatorGuts.length - 1);
-					combinatorGuts += ';';
-					combinator = new Function('chunks', combinatorGuts);
+					if (parsedStart.ints[3] == undefined) parsedStart.ints[3] = 1;
+					if (parsedEnd.ints[3] == undefined) parsedEnd.ints[3] = 1;
 				}
+				if (parsedStart.ints.length != parsedEnd.ints.length){		//DEBATE
+					for (let i = 0; i < parsedEnd.ints.length; i++){
+						if (parsedStart.ints[i] === undefined){
+							parsedStart.ints[i] = 0;
+						}
+					}
+				}
+				
+				let combinatorGuts = 'return ';
+				for (let i = 0, j = 0; i < source.length; i++){
+					if (typeof source[i] === 'string'){
+						combinatorGuts += '\''+source[i]+'\'+';
+					} else if (isRGB && j != 3){
+						combinatorGuts += 'Math.round(chunks['+j+'])+';
+						j++;
+					} else {
+						combinatorGuts += 'chunks['+j+']+';
+						j++;
+					}
+				}
+				combinatorGuts = combinatorGuts.substring(0, combinatorGuts.length - 1);
+				combinatorGuts += ';';
+				combinator = new Function('chunks', combinatorGuts);
 			}
 
 			if (parsedStart.ints != undefined && parsedEnd.ints != undefined){
@@ -165,6 +163,7 @@ Alive.prototype.animate = function(element,property,value,duration,delay,callbac
 					}
 				}
 			};
+
 			new alive_Animation(
 				this,
 				node,

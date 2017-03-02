@@ -7,6 +7,12 @@ function Periodic(svg){
 	this.ratio = 1.4;
 	this.gaps = 0;
 
+	this.story = getStory();
+	this.overlay = document.createElement('div');
+	this.overlay.classList.add('story');
+	this.overlay.innerHTML = this.story.initial;
+	document.body.appendChild(this.overlay);
+
 	this.setSizes(32,7);
 
 	this.colorFaded = [240,240,250];
@@ -32,14 +38,26 @@ function Periodic(svg){
 	this.header.style.fontSize = this.cellWidth * .8 + 'px';
 	this.header.setAttribute('x', this.width * .5);
 	this.header.setAttribute('y', this.height * .16);
-
 	this.g.appendChild(this.header);
 	this.svg.appendChild(this.g);
 
 	for (let i = 0; i < this.elements.length; i++){
 		this.stuff.push(new Element(this,i));
 	}
-	//this.stuff.push(new Element(this, 42));
+	//this.stuff.push(new Element(this, 41));
+}
+Periodic.prototype.showStory = function(){
+	//this.svg.style.filter = 'blur(1px) brightness(1)';
+	//alive.animate(this.svg, 'filter', 'blur(80px) brightness(1.2)', 2000);
+	alive.animate(this.svg, 'opacity', .04, 300);
+	this.overlay.style.display = 'block';
+	this.overlay.style.opacity = 0;
+	alive.animate(this.overlay, 'opacity', 1, 300);
+}
+Periodic.prototype.hideStory = function(){
+	alive.animate(this.svg, 'opacity', 1, 100);
+	//alive.animate(this.svg, 'filter', 'blur(0px) brightness(1)', 100, function(){this.overlay.style.display = 'none';}.bind(this), 'accel');
+	alive.animate(this.overlay, 'opacity', 0, 100, 'decel');
 }
 Periodic.prototype.setSizes = function(columns, rows){
 	this.width = this.svg.clientWidth || document.body.offsetWidth;
@@ -59,6 +77,7 @@ Periodic.prototype.setSizes = function(columns, rows){
 		x: this.width / 2,
 		y: (this.height + this.yPadding) / 2
 	}
+
 }
 Periodic.prototype.update = function(mode){
 	if (mode) this.mode = mode;
@@ -71,8 +90,8 @@ Periodic.prototype.update = function(mode){
 	}
 
 	alive.animate(this.header, 'font-size', this.cellWidth * .8 + 'px', 500);
-	alive.animate(this.header, 'x', this.width * .5, 500, 'soft');
-	alive.animate(this.header, 'y', this.height * .16, 500, 'soft');
+	alive.animate(this.header, 'x(A)', this.width * .5, 500, 'soft');
+	alive.animate(this.header, 'y(A)', this.height * .16, 500, 'soft');
 
 	for (let i = 0; i < this.stuff.length; i++){
 		this.stuff[i].update(this.mode);
@@ -107,7 +126,7 @@ Periodic.prototype.repaint = function(scheme,isDark){
 		alive.animate(this.svg, 'background-color', darkBack, 1000);
 		alive.animate(this.header, 'fill', 'rgb(255,255,255)', 1000);
 	} else if (window.getComputedStyle(this.svg)['backgroundColor'] != darkBack){
-		alive.animate(this.svg, 'background-color', 'rgba(0,0,0,0)', 1000);
+		alive.animate(this.svg, 'background-color', 'rgb(255,255,255)', 1000);
 		alive.animate(this.header, 'fill', 'rgb(0,0,0)', 1000);
 	}
 }
@@ -188,7 +207,7 @@ Element.prototype.inject = function(){
 
 	let randomDelay = Math.random()*1000;
 	alive.animate(this.rect, 'fill', 'rgb('+this.color[0]+','+this.color[1]+','+this.color[2]+')', 2000, randomDelay);
-	alive.animate(this.g, 'svgTransform', 'translate('+this.gx+','+this.gy+')', 2000, randomDelay, 'decel');
+	alive.animate(this.g, 'transform(A)', 'translate('+this.gx+','+this.gy+')', 2000, randomDelay, 'decel');
 }
 Element.prototype.reject = function(){
 	alive.animate(this.g, 'opacity', 0, 2000, function(){this.periodic.svg.removeChild(this.g)}.bind(this),'accel')
@@ -219,10 +238,10 @@ Element.prototype.update = function(mode){
 		let rowLength = 20;
 		this.gx = ((this.element.index - 1) % rowLength) * this.periodic.cellWidth + ((this.element.index - 1) % rowLength) * this.periodic.gaps  + this.periodic.xPadding;
 		this.gy = Math.floor((this.element.index - 1) / rowLength) * this.periodic.cellHeight + Math.floor((this.element.index - 1) / rowLength) * this.periodic.gaps + this.periodic.yPadding;
-		delay = this.element.index*16;
+		delay = this.element.index*8;
 	}
 
-	alive.animate(this.g, 'svgTransform', 'translate('+this.gx+','+this.gy+'))', duration, delay, function(){
+	alive.animate(this.g, 'transform(A)', 'translate('+this.gx+','+this.gy+')', duration, delay, function(){
 		this.setSizes();
 	}.bind(this),'soft');
 
@@ -333,14 +352,6 @@ Element.prototype.repaint = function(scheme){
 			alive.animate(this.atomic, 'fill', 'rgba(255,255,255,0.6)', 600);
 		}
 	}
-
-	/*
-	if (scheme == 'weight'){
-		this.swapAtomic();
-	} else {
-		this.swapAtomic(true);
-	}
-	*/
 }
 Element.prototype.setData = function(data,fontDivider){
 	if (data != this.shortLabel.innerHTML){
@@ -362,14 +373,14 @@ Element.prototype.swapAtomic = function(back){
 			big.setAttribute('dominant-baseline', 'mathematical');
 			big.style.fontWeight = 200;
 		}.bind(this));
-		alive.animate(big, 'x', this.periodic.cellWidth * .92, 200, randomDelay);
-		alive.animate(big, 'y', this.periodic.cellHeight * .08, 200, randomDelay);
+		alive.animate(big, 'x(A)', this.periodic.cellWidth * .92, 200, randomDelay);
+		alive.animate(big, 'y(A)', this.periodic.cellHeight * .08, 200, randomDelay);
 
 		alive.animate(small, 'font-size', this.periodic.cellWidth / (back ? 2 : 3) + 'px', 100, randomDelay, function(){
 			small.setAttribute('text-anchor', 'middle');
 			small.setAttribute('dominant-baseline', 'middle');
 			small.style.fontWeight = 400;
 		}.bind(this));
-		alive.animate(small, 'x', this.periodic.cellWidth / 2, 200, randomDelay);
-		alive.animate(small, 'y', this.periodic.cellHeight / 2, 200, randomDelay);
+		alive.animate(small, 'x(A)', this.periodic.cellWidth / 2, 200, randomDelay);
+		alive.animate(small, 'y(A)', this.periodic.cellHeight / 2, 200, randomDelay);
 }
